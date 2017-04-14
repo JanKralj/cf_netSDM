@@ -1,0 +1,6 @@
+include CHANGELOG.md
+include LICENSE.md
+include README.md
+
+recursive-include cf_netSDM *
+global-exclude *.pyc
