@@ -72,10 +72,10 @@ def page_rank(matrix, start_nodes,
         ret = np.zeros(size)
         ret[which] = rank_vec
         ret[start_nodes] = 0
-        return ret
+        return ret.flatten()
     else:
         rank_vec[start_nodes] = 0
-        return rank_vec
+        return rank_vec.flatten()
 
 
 def nx_pagerank(network, node_list, enriched_nodes):
@@ -104,3 +104,28 @@ def shrink_py_pr(network, node_list, pr, percentage, enriched_symbols):
         for i in range(pr.shape[0]):
             if node_list[i] in enriched_symbols:
                 network.remove_node(node_list[i])
+
+
+def label_propagation_normalization(matrix):
+    matrix = matrix.tocsr()
+    matrix.setdiag(0)
+    d = matrix.sum(axis=1).getA1()
+    nzs = np.where(d > 0)
+    d[nzs] = 1 / np.sqrt(d[nzs])
+    dm = sp.diags(d, 0).tocsc()
+    return dm.dot(matrix).dot(dm)
+
+
+def label_propagation(graph_matrix, class_matrix, alpha, epsilon=1e-12, max_steps=10000):
+    # This method assumes the label-propagation normalization and a symmetric matrix with no rank sinks.
+    steps = 0
+    diff = np.inf
+    current_labels = class_matrix
+    while diff > epsilon and steps < max_steps:
+        # print steps
+        # print diff
+        steps += 1
+        new_labels = alpha * graph_matrix.dot(current_labels) + (1 - alpha) * class_matrix
+        diff = np.linalg.norm(new_labels - current_labels) / np.linalg.norm(new_labels)
+        current_labels = new_labels
+    return current_labels

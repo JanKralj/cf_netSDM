@@ -12,7 +12,7 @@
       "image": "", 
       "description": "TODO", 
       "static_image": "", 
-      "action": "netsdm_reduce", 
+      "action": "cf_netsdm_reduce", 
       "visualization_view": "", 
       "streaming_visualization_view": "", 
       "post_interact_action": "", 
@@ -22,6 +22,23 @@
       "windows_queue": false, 
       "order": 1, 
       "name": "netSDM-reduce"
+    }
+  }, 
+  {
+    "model": "workflows.abstractinput", 
+    "fields": {
+      "widget": "349dabfc-b54b-40be-86b2-2403cfc4f4fa", 
+      "name": "minimum_ranking", 
+      "short_name": "rnk", 
+      "default": "0.5", 
+      "description": "Minimum ranking a node must have to not be pruned", 
+      "required": true, 
+      "multi": false, 
+      "parameter_type": "text", 
+      "variable": "minimum_ranking", 
+      "parameter": true, 
+      "order": 2, 
+      "uid": "3951eeed-89c5-49c9-a5ef-9327d18f36ff"
     }
   }, 
   {
@@ -45,6 +62,23 @@
     "model": "workflows.abstractinput", 
     "fields": {
       "widget": "349dabfc-b54b-40be-86b2-2403cfc4f4fa", 
+      "name": "target", 
+      "short_name": "tgt", 
+      "default": "+", 
+      "description": "Target class label", 
+      "required": true, 
+      "multi": false, 
+      "parameter_type": "text", 
+      "variable": "target", 
+      "parameter": true, 
+      "order": 3, 
+      "uid": "b624e9a6-ee13-4f15-861f-43b210dbf6ee"
+    }
+  }, 
+  {
+    "model": "workflows.abstractinput", 
+    "fields": {
+      "widget": "349dabfc-b54b-40be-86b2-2403cfc4f4fa", 
       "name": "bk_file", 
       "short_name": "bk", 
       "default": "", 
@@ -54,8 +88,37 @@
       "parameter_type": null, 
       "variable": "bk_file", 
       "parameter": false, 
-      "order": 2, 
+      "order": 5, 
       "uid": "cf1b51a3-a75b-481d-9b15-daf2574bde99"
+    }
+  }, 
+  {
+    "model": "workflows.abstractinput", 
+    "fields": {
+      "widget": "349dabfc-b54b-40be-86b2-2403cfc4f4fa", 
+      "name": "directed", 
+      "short_name": "dir", 
+      "default": "true", 
+      "description": "Should scoring function take directions into account", 
+      "required": true, 
+      "multi": false, 
+      "parameter_type": "checkbox", 
+      "variable": "directed", 
+      "parameter": true, 
+      "order": 4, 
+      "uid": "f0858706-b5a5-4756-9eeb-ed05981773a8"
+    }
+  }, 
+  {
+    "model": "workflows.abstractoutput", 
+    "fields": {
+      "widget": "349dabfc-b54b-40be-86b2-2403cfc4f4fa", 
+      "name": "bk_file", 
+      "short_name": "bk", 
+      "description": "Background knowledge file", 
+      "variable": "bk_file", 
+      "order": 1, 
+      "uid": "08ea1cec-22ae-493e-9d35-1a1982d0c73f"
     }
   }
 ]
