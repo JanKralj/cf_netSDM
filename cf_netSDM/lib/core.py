@@ -8,7 +8,10 @@ from collections import defaultdict
 def stochastic_normalization(matrix):
     logging.info('Creating google matrix...')
     matrix = matrix.tolil()
-    matrix.setdiag(0)
+    try:
+        matrix.setdiag(0)
+    except TypeError:
+        matrix.setdiag(np.zeros(matrix.shape[0]))
     matrix = matrix.tocsr()
     d = matrix.sum(axis=1).getA1()
     nzs = np.where(d > 0)
@@ -217,7 +220,7 @@ def label_propagation_normalization(matrix):
     matrix = matrix.tocsr()
     try:
         matrix.setdiag(0)
-    except Exception:
+    except TypeError:
         matrix.setdiag(np.zeros(matrix.shape[0]))
     d = matrix.sum(axis=1).getA1()
     nzs = np.where(d > 0)
