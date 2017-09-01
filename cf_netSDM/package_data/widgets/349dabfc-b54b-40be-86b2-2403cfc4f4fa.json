@@ -28,6 +28,23 @@
     "model": "workflows.abstractinput", 
     "fields": {
       "widget": "349dabfc-b54b-40be-86b2-2403cfc4f4fa", 
+      "name": "advanced_removal", 
+      "short_name": "rem", 
+      "default": "true", 
+      "description": "Should the node removal be done by taking transitivity into account", 
+      "required": true, 
+      "multi": false, 
+      "parameter_type": "checkbox", 
+      "variable": "adv_removal", 
+      "parameter": true, 
+      "order": 2, 
+      "uid": "1f5e57cb-a1ba-4a60-8ed8-37997d4a1355"
+    }
+  }, 
+  {
+    "model": "workflows.abstractinput", 
+    "fields": {
+      "widget": "349dabfc-b54b-40be-86b2-2403cfc4f4fa", 
       "name": "minimum_ranking", 
       "short_name": "rnk", 
       "default": "0.5", 
@@ -37,7 +54,7 @@
       "parameter_type": "text", 
       "variable": "minimum_ranking", 
       "parameter": true, 
-      "order": 2, 
+      "order": 4, 
       "uid": "3951eeed-89c5-49c9-a5ef-9327d18f36ff"
     }
   }, 
@@ -71,7 +88,7 @@
       "parameter_type": "text", 
       "variable": "target", 
       "parameter": true, 
-      "order": 3, 
+      "order": 5, 
       "uid": "b624e9a6-ee13-4f15-861f-43b210dbf6ee"
     }
   }, 
@@ -88,8 +105,25 @@
       "parameter_type": null, 
       "variable": "bk_file", 
       "parameter": false, 
-      "order": 5, 
+      "order": 7, 
       "uid": "cf1b51a3-a75b-481d-9b15-daf2574bde99"
+    }
+  }, 
+  {
+    "model": "workflows.abstractinput", 
+    "fields": {
+      "widget": "349dabfc-b54b-40be-86b2-2403cfc4f4fa", 
+      "name": "hyper", 
+      "short_name": "hy", 
+      "default": "false", 
+      "description": "Should the background knowledge be converted into a hypergraph or naive network", 
+      "required": true, 
+      "multi": false, 
+      "parameter_type": "checkbox", 
+      "variable": "hyper", 
+      "parameter": true, 
+      "order": 3, 
+      "uid": "da922762-94cf-47fc-9bd4-113dabcfdfad"
     }
   }, 
   {
@@ -105,7 +139,7 @@
       "parameter_type": "checkbox", 
       "variable": "directed", 
       "parameter": true, 
-      "order": 4, 
+      "order": 6, 
       "uid": "f0858706-b5a5-4756-9eeb-ed05981773a8"
     }
   }, 
@@ -119,6 +153,18 @@
       "variable": "bk_file", 
       "order": 1, 
       "uid": "08ea1cec-22ae-493e-9d35-1a1982d0c73f"
+    }
+  }, 
+  {
+    "model": "workflows.abstractoutput", 
+    "fields": {
+      "widget": "349dabfc-b54b-40be-86b2-2403cfc4f4fa", 
+      "name": "ex_file", 
+      "short_name": "ex", 
+      "description": "Data set with annotations using terms from the new, pruned, ontology", 
+      "variable": "ex_file", 
+      "order": 2, 
+      "uid": "b3e9077e-d5f7-4126-86c3-1ed8da03b473"
     }
   }
 ]
