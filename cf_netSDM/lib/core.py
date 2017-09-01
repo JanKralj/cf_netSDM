@@ -215,7 +215,10 @@ def remove_hyper(network, node):
 
 def label_propagation_normalization(matrix):
     matrix = matrix.tocsr()
-    matrix.setdiag(0)
+    try:
+        matrix.setdiag(0)
+    except Exception:
+        matrix.setdiag(np.zeros(matrix.shape[0]))
     d = matrix.sum(axis=1).getA1()
     nzs = np.where(d > 0)
     d[nzs] = 1 / np.sqrt(d[nzs])
