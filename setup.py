@@ -9,5 +9,6 @@ setup(
     url='',
     author='Jan Kralj',
     author_email='jan.kralj@ijs.si',
-    packages=['cf_netSDM', ]
+    packages=['cf_netSDM', ],
+    include_package_data=True,
 )
