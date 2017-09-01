@@ -2,12 +2,13 @@ from library import cf_netsdm_reduce, cf_load_gml, cf_hinmine_decompose_post, \
     cf_hinmine_propositionalize, cf_hinmine_label_propagation
 
 
-def netsdm_reduce(examples, bk_file, target, directed, minimum_ranking):
+def netsdm_reduce(examples, bk_file, target, directed, minimum_ranking, hyper):
     return cf_netsdm_reduce({'examples': examples,
                              'bk_file': bk_file,
                              'target': target,
                              'directed': 'true' if directed else 'false',
-                             'minimum_ranking': minimum_ranking})['bk_file']
+                             'minimum_ranking': minimum_ranking,
+                             'hyper': 'true' if hyper else 'false'})
 
 
 def load_gml(file, label_delimiter):

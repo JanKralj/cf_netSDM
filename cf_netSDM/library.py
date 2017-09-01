@@ -1,8 +1,8 @@
 from rdflib.graph import Graph
-from lib.converters import n3_to_nx, digraph_to_graph, nx_to_n3
-from lib.helpers import prepare, add_generalization_predicates
-from lib.core import nx_pagerank, shrink_py_pr, page_rank, stochastic_normalization, label_propagation, \
-    label_propagation_normalization
+from lib.converters import n3_to_nx, digraph_to_graph, nx_to_n3, n3_to_nx_hyper, nx_to_n3_hyper
+from lib.helpers import prepare, add_generalization_predicates, add_negatives_hyper, add_negatives_regular
+from lib.core import nx_pagerank, shrink_by_pr, shrink_hyper_by_pr,  page_rank, stochastic_normalization, \
+    label_propagation, label_propagation_normalization
 from networkx import read_gml
 from lib.HIN import HeterogeneousInformationNetwork
 from collections import defaultdict
@@ -11,22 +11,37 @@ import logging
 
 
 def cf_netsdm_reduce(input_dict):
+    if input_dict['hyper'] == 'true':
+        to_graph, to_rdf, shrink, add_negatives = n3_to_nx_hyper, nx_to_n3_hyper, shrink_hyper_by_pr, add_negatives_hyper
+    else:
+        to_graph, to_rdf, shrink, add_negatives = n3_to_nx, nx_to_n3, shrink_by_pr, add_negatives_regular
     data = Graph()
     prepare(data)
     data.parse(data=input_dict['examples'], format='n3')
     for ontology in input_dict['bk_file']:
         data.parse(data=ontology, format='n3')
-    full_network, positive_nodes, generalization_predicates = n3_to_nx(data, input_dict['target'])
+    full_network, positive_nodes, negative_annotations, generalization_predicates = to_graph(data, input_dict['target'])
     if not input_dict['directed'] == 'true':
         full_network = digraph_to_graph(full_network)
     node_list = full_network.nodes()
-    scores, scores_dict = nx_pagerank(full_network, node_list, positive_nodes)
-    shrink_py_pr(full_network, node_list, scores, float(input_dict['minimum_ranking']), positive_nodes)
+    node_list.sort()
+    scores, scores_dict = nx_pagerank(digraph_to_graph(full_network) if not input_dict['directed'] == 'true' else full_network, node_list, positive_nodes)
+    add_negatives(full_network, negative_annotations)
+    if not input_dict['adv_removal'] == 'false':
+        if input_dict['hyper'] == 'true':
+            raise Exception('Naive node removal is not compatible with hypergraph network construction.')
+        shrink(full_network, node_list, scores, float(input_dict['minimum_ranking']), positive_nodes, naive_removal=True)
+    else:
+        shrink(full_network, node_list, scores, float(input_dict['minimum_ranking']), positive_nodes)
+    negative_nodes = set(negative_annotations.keys())
+    rdf_network, rdf_annotations = to_rdf(full_network, positive_nodes, negative_nodes)
 
-    rdf_network = nx_to_n3(full_network)
     add_generalization_predicates(rdf_network, generalization_predicates)
+    return {'bk_file': rdf_network.serialize(format='n3'),
+            'ex_file': rdf_annotations.serialize(format='n3')}
 
-    return {'bk_file': rdf_network.serialize(format='n3')}
+
+
 
 
 def cf_load_gml(input_dict):

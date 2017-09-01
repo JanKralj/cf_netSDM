@@ -2,6 +2,7 @@ import networkx as nx
 import numpy as np
 import scipy.sparse as sp
 import logging
+from collections import defaultdict
 
 
 def stochastic_normalization(matrix):
@@ -92,18 +93,124 @@ def nx_pagerank(network, node_list, enriched_nodes):
     return pr, pr_dict
 
 
-def shrink_py_pr(network, node_list, pr, percentage, enriched_symbols):
+def shrink_by_pr(network, node_list, pr, percentage, enriched_symbols, naive_removal=False):
     if percentage < 1:
-        pr_sorted = np.sort(pr.flatten())
-        pr_sorted[:] = pr_sorted[::-1]
-        threshold = pr_sorted[int(percentage * (pr.shape[0] - len(enriched_symbols)))]
-        for i in range(pr.shape[0]):
-            if pr[i] < threshold:
-                network.remove_node(node_list[i])
-    else:
-        for i in range(pr.shape[0]):
-            if node_list[i] in enriched_symbols:
-                network.remove_node(node_list[i])
+        new_node_list = []
+        for node_index, node in enumerate(node_list):
+            if node not in enriched_symbols:
+                new_node_list.append((node, pr[node_index]))
+        new_node_list.sort(key=lambda x: x[1], reverse=True)
+        # threshold = new_node_list[int(percentage * len(new_node_list))]
+        i = 1
+        print len(new_node_list)
+        belows = defaultdict(set)
+        for x in network:
+            for node in network.edge[x]:
+                belows[node].add(x)
+        for node, score in new_node_list[int(percentage * len(new_node_list)):]:
+            i += 1
+            if node not in enriched_symbols:
+                if naive_removal:
+                    network.remove_node(node)
+                else:
+                    remove_regular(network, node, belows)
+
+def remove_regular(network, node, belows):
+    # below = [x for x in network if node in network.edge[x]]
+    # print set(below) == set(belows[node])
+    below = belows[node]
+    above = network.edge[node].keys()
+    relations = set([network.edge[x][node]['type'] for x in below])
+    relations.update([network.edge[node][x]['type'] for x in above])
+    if 'annotated_by' in relations:
+        relations.remove('annotated_by')
+    examples = [x for x in below if network.edge[x][node]['type'] == 'annotated_by']
+    for relation in relations:
+        r_below = [x for x in below if network.edge[x][node]['type'] == relation]
+        r_above = [x for x in above if network.edge[node][x]['type'] == relation]
+        for upper in r_above:
+            for lower in r_below:
+                network.add_edge(lower, upper, type=relation)
+                belows[upper].add(lower)
+            for example in examples:
+                network.add_edge(example, upper, type='annotated_by')
+                belows[upper].add(example)
+            belows[upper].remove(node)
+    network.remove_node(node)
+
+
+def shrink_hyper_by_pr(network, node_list, pr, percentage, enriched_symbols):
+    if percentage < 1:
+        new_node_list = []
+        for node_index, node in enumerate(node_list):
+            if not node.startswith('r_') and not node.startswith('a_') and not network[node].values()[0]['type'] == 'predicate':
+                new_node_list.append((node, pr[node_index]))
+        new_node_list.sort(key=lambda x: x[1], reverse=True)
+        # threshold = new_node_list[int(percentage * len(new_node_list))]
+        for node, score in new_node_list[int(percentage * len(new_node_list)):]:
+            if node not in enriched_symbols:
+                remove_hyper(network, node)
+    #         # network.remove_node(node)
+    # else:
+    #     for node in enriched_symbols:
+    #         if node in network:
+    #             network.remove_node(node)
+
+
+def remove_hyper(network, node):
+    relations = defaultdict(list)
+    annotations = []
+    to_delete = []
+    for edge in network.edge[node]:
+        if edge.startswith('r_'):
+            key = [y for y in network.edge[edge] if network.edge[edge][y]['type'] == 'predicate'].pop()
+            relations[key].append(edge)
+        elif edge.startswith('a_'):
+            to_delete.append(edge)
+            annotations.append([x for x in network.edge[edge] if network.edge[edge][x]['type'] == 'object'].pop())
+    for relation in relations:
+        subject_to = []
+        object_to = []
+        for edge in relations[relation]:
+            if network.edge[edge][node]['type'] == 'subject':
+                try:
+                    subject_to.append([x for x in network.edge[edge] if network.edge[edge][x]['type'] == 'object'].pop())
+                except Exception:
+                    print "ojoj."
+            elif network.edge[edge][node]['type'] == 'object':
+                object_to.append([x for x in network.edge[edge] if network.edge[edge][x]['type'] == 'subject'].pop())
+            else:
+                raise Exception('This should not happen')
+            network.remove_node(edge)
+        for object in subject_to:
+            for subject in object_to:
+                relation_node = 'r_n_%s-%s' % (subject[-7:], object[-7:])
+                if relation_node in network:
+                    assert object in network.edge[relation_node]
+                    assert subject in network.edge[relation_node]
+                    assert relation in network.edge[relation_node]
+                else:
+                    network.add_node(relation_node)
+                    network.add_edge(relation_node, object, type='object')
+                    network.add_edge(relation_node, subject, type='subject')
+                    network.add_edge(relation_node, relation, type='predicate')
+            for annotation in annotations:
+                annotation_node = 'a_n_%s-%s' % (annotation.split('#')[-1], object[-7:])
+                if annotation_node in network:
+                    assert object in network.edge[annotation_node]
+                    assert annotation in network.edge[annotation_node]
+                    assert 'annotates' in network.edge[annotation_node]
+                else:
+                    network.add_node(annotation_node)
+                    network.add_edge(annotation_node, object, type='subject')
+                    network.add_edge(annotation_node, annotation, type='object')
+                    network.add_edge(annotation_node, 'annotates', type='predicate')
+    for x in to_delete:
+        network.remove_node(x)
+    network.remove_node(node)
+
+
+
 
 
 def label_propagation_normalization(matrix):
@@ -129,3 +236,18 @@ def label_propagation(graph_matrix, class_matrix, alpha, epsilon=1e-12, max_step
         diff = np.linalg.norm(new_labels - current_labels) / np.linalg.norm(new_labels)
         current_labels = new_labels
     return current_labels
+
+if __name__=='__main__':
+    while True:
+        g = nx.DiGraph()
+        g.add_edge(1, 2, type='is_a')
+        g.add_edge(2, 3, type='is_a')
+        g.add_edge(3, 4, type='is_a')
+        g.add_edge(5, 2, type='is_a')
+        g.add_edge(6, 3, type='is_a')
+        g.add_edge(7, 4, type='is_a')
+        g.add_edge(6, 7, type='is_a')
+        s = [0.9, 0.7, 0.6, 0.2, 0.8, 0.4, 0.5]
+        print s
+        shrink_by_pr(g, [1,2,3,4,5,6,7], s, 0.55, set())
+        print 9
