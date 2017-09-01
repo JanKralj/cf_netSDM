@@ -2,6 +2,7 @@ from setuptools import setup
 
 setup(
     name='cf_netSDM',
+    install_requires=['numpy', 'rdflib'],
     version='0.0.1',
     license='MIT License',
     description='TODO',
