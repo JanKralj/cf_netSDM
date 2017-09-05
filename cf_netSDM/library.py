@@ -22,10 +22,13 @@ def cf_netsdm_reduce(input_dict):
         data.parse(data=ontology, format='n3')
     full_network, positive_nodes, negative_annotations, generalization_predicates = to_graph(data, input_dict['target'])
     if not input_dict['directed'] == 'true':
+        saved_directions = full_network
         full_network = digraph_to_graph(full_network)
     node_list = full_network.nodes()
     node_list.sort()
     scores, scores_dict = nx_pagerank(digraph_to_graph(full_network) if not input_dict['directed'] == 'true' else full_network, node_list, positive_nodes)
+    if not input_dict['directed'] == 'true':
+        full_network = saved_directions
     add_negatives(full_network, negative_annotations)
     if not input_dict['adv_removal'] == 'false':
         if input_dict['hyper'] == 'true':

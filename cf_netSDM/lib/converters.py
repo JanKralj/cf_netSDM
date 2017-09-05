@@ -50,10 +50,10 @@ def nx_to_n3(network, positive_nodes, n):
     annotations = rdflib.Graph()
     for term in network.node:
         if term in pun:
+            annotations.add((term, rdflib.RDF.type, ns1.Example))
             for end in network.edge[term]:
                 blank = rdflib.BNode()
                 annotations.add((term, ns1.annotated_with, blank))
-                annotations.add((term, rdflib.RDF.type, ns1.Example))
                 annotations.add((blank, ns1.annotation, end))
             if term in p:
                 annotations.add((term, ns1.class_label, rdflib.Literal('+')))
@@ -63,7 +63,8 @@ def nx_to_n3(network, positive_nodes, n):
                 raise Exception('Unexpected data set error.')
         else:
             for end in network.edge[term]:
-                ontology.add((term, network.edge[term][end]['type'], end))
+                if end not in pun:
+                    ontology.add((term, network.edge[term][end]['type'], end))
     return ontology, annotations
 
 
