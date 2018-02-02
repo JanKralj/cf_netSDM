@@ -18,6 +18,7 @@ def n3_to_nx(data, positive_class):
             if user_defined(sub) and user_defined(obj):
                 return_graph.add_edge(sub, obj, type=predicate)
     target_nodes = set()
+    bad_annotations = []
     for example in data.subjects(predicate=RDF.type, object=HEDWIG.Example):
         positive = (example, HEDWIG.class_label, positive_class) in data
         if positive:
@@ -28,12 +29,16 @@ def n3_to_nx(data, positive_class):
             if next(annotations, None) is not None:
                 raise Exception("Unable to parse data - annotations for example %s are unclear" % example)
             if annotation not in return_graph:
-                raise Exception("Data - BK synchronization error: annotation %s does not appear in the Background "
-                                "knowledge!" % annotation)
+                bad_annotations.append(annotation)
+                #raise Exception("Data - BK synchronization error: annotation %s does not appear in the Background "
+                #                "knowledge!" % annotation)
             if positive:
                 return_graph.add_edge(example, annotation, type='annotated_by')
             else:
                 return_non_targets[example].append(annotation)
+    if len(bad_annotations) > 0:
+        bad_annotations = set(bad_annotations)
+        raise Exception("%i bad annotations detected: " % len(bad_annotations) + ', '.join(list(bad_annotations)))
     roots = [node for node in return_graph if len(return_graph.edge[node]) == 0]
     for root in roots:
         return_graph.add_edge(root, HEDWIG.dummy_root, type=RDF.type)

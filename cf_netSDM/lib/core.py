@@ -74,7 +74,7 @@ def page_rank(matrix, start_nodes,
         rank_vec = new_rank
     if try_shrink and shrink:
         ret = np.zeros(size)
-        ret[which] = rank_vec
+        ret[which] = rank_vec.reshape(rank_vec.shape[0])
         ret[start_nodes] = 0
         return ret.flatten()
     else:
@@ -96,7 +96,7 @@ def nx_pagerank(network, node_list, enriched_nodes):
     return pr, pr_dict
 
 
-def shrink_by_pr(network, node_list, pr, percentage, enriched_symbols, naive_removal=False):
+def shrink_by_pr(network, node_list, pr, percentage, enriched_symbols, interdependent_relations, naive_removal=False):
     if percentage < 1:
         new_node_list = []
         for node_index, node in enumerate(node_list):
@@ -116,9 +116,10 @@ def shrink_by_pr(network, node_list, pr, percentage, enriched_symbols, naive_rem
                 if naive_removal:
                     network.remove_node(node)
                 else:
-                    remove_regular(network, node, belows)
+                    remove_regular(network, node, belows, interdependent_relations)
 
-def remove_regular(network, node, belows):
+
+def remove_regular(network, node, belows, interdependent_relations):
     # below = [x for x in network if node in network.edge[x]]
     # print set(below) == set(belows[node])
     below = belows[node]
@@ -128,6 +129,34 @@ def remove_regular(network, node, belows):
     if 'annotated_by' in relations:
         relations.remove('annotated_by')
     examples = [x for x in below if network.edge[x][node]['type'] == 'annotated_by']
+
+    for general_relation, specific_relation in interdependent_relations:
+        # this is to take care of compositums of relations, such as part_of and is_a, which compose into part_of.
+        # in that context, part of is more general, is_a is more specific.
+        relations.remove(general_relation)
+        relations.remove(specific_relation)
+
+        general_below = [x for x in below if network.edge[x][node]['type'] == general_relation]
+        general_above = [x for x in above if network.edge[x][node]['type'] == general_relation]
+        specific_below = [x for x in below if network.edge[x][node]['type'] == specific_relation]
+        specific_above = [x for x in above if network.edge[x][node]['type'] == specific_relation]
+        for upper in general_above:
+            for lower in general_below + specific_below:
+                network.add_edge(lower, upper, type=general_relation)
+                belows[upper].add(lower)
+            belows[upper].remove(node)
+        for upper in specific_above:
+            for lower in general_below:
+                network.add_edge(lower, upper, type=general_relation)
+                belows[upper].add(lower)
+            for lower in specific_below:
+                network.add_edge(lower, upper, type=specific_relation)
+                belows[upper].add(lower)
+            for example in examples:
+                network.add_edge(example, upper, type='annotated_by')
+                belows[upper].add(example)
+            belows[upper].remove(node)
+
     for relation in relations:
         r_below = [x for x in below if network.edge[x][node]['type'] == relation]
         r_above = [x for x in above if network.edge[node][x]['type'] == relation]

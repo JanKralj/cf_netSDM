@@ -8,7 +8,7 @@ from lib.HIN import HeterogeneousInformationNetwork
 from collections import defaultdict
 import numpy as np
 import logging
-
+#test
 
 def cf_netsdm_reduce(input_dict):
     if input_dict['hyper'] == 'true':
@@ -33,9 +33,9 @@ def cf_netsdm_reduce(input_dict):
     if not input_dict['adv_removal'] == 'false':
         if input_dict['hyper'] == 'true':
             raise Exception('Naive node removal is not compatible with hypergraph network construction.')
-        shrink(full_network, node_list, scores, float(input_dict['minimum_ranking']), positive_nodes, naive_removal=True)
+        shrink(full_network, node_list, scores, float(input_dict['minimum_ranking']), positive_nodes, input_dict['interdependent_relations'], naive_removal=True)
     else:
-        shrink(full_network, node_list, scores, float(input_dict['minimum_ranking']), positive_nodes)
+        shrink(full_network, node_list, scores, float(input_dict['minimum_ranking']), positive_nodes, input_dict['interdependent_relations'])
     negative_nodes = set(negative_annotations.keys())
     rdf_network, rdf_annotations = to_rdf(full_network, positive_nodes, negative_nodes)
 

@@ -2,13 +2,15 @@ from library import cf_netsdm_reduce, cf_load_gml, cf_hinmine_decompose_post, \
     cf_hinmine_propositionalize, cf_hinmine_label_propagation
 
 
-def netsdm_reduce(examples, bk_file, target, directed, minimum_ranking, hyper):
+def netsdm_reduce(examples, bk_file, target, directed, minimum_ranking, hyper, adv_removal):
     return cf_netsdm_reduce({'examples': examples,
                              'bk_file': bk_file,
                              'target': target,
+                             'adv_removal': 'true' if adv_removal else 'false',
                              'directed': 'true' if directed else 'false',
                              'minimum_ranking': minimum_ranking,
-                             'hyper': 'true' if hyper else 'false'})
+                             'hyper': 'true' if hyper else 'false',
+                             'interdependent_relations': [('http://kt.ijs.si/jan_rel#part_of', 'http://kt.ijs.si/jan_rel#is_a')]}) #TODO: improve this!!!
 
 
 def load_gml(file, label_delimiter):
