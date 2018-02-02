@@ -8,7 +8,7 @@ from lib.HIN import HeterogeneousInformationNetwork
 from collections import defaultdict
 import numpy as np
 import logging
-#test
+#py3
 
 def cf_netsdm_reduce(input_dict):
     if input_dict['hyper'] == 'true':
