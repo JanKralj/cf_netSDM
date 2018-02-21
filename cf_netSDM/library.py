@@ -1,10 +1,10 @@
 from rdflib.graph import Graph
-from lib.converters import n3_to_nx, digraph_to_graph, nx_to_n3, n3_to_nx_hyper, nx_to_n3_hyper
-from lib.helpers import prepare, add_generalization_predicates, add_negatives_hyper, add_negatives_regular
-from lib.core import nx_pagerank, shrink_by_pr, shrink_hyper_by_pr,  page_rank, stochastic_normalization, \
+from .lib.converters import n3_to_nx, digraph_to_graph, nx_to_n3, n3_to_nx_hyper, nx_to_n3_hyper
+from .lib.helpers import prepare, add_generalization_predicates, add_negatives_hyper, add_negatives_regular
+from .lib.core import nx_pagerank, shrink_by_pr, shrink_hyper_by_pr,  page_rank, stochastic_normalization, \
     label_propagation, label_propagation_normalization
 from networkx import read_gml
-from lib.HIN import HeterogeneousInformationNetwork
+from .lib.HIN import HeterogeneousInformationNetwork
 from collections import defaultdict
 import numpy as np
 import logging

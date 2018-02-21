@@ -1,8 +1,8 @@
 import networkx as nx
-from settings import HEDWIG
+from .settings import HEDWIG
 from rdflib import RDF
 from rdflib.term import Literal
-from helpers import user_defined, prepare
+from .helpers import user_defined, prepare
 import logging
 import rdflib
 from collections import defaultdict
@@ -178,21 +178,21 @@ def convert_to_aleph(input_dict):
     return_dict = {'background': ''}
     data = rdflib.Graph()
     prepare(data)
-    print "parsing examples"
+    print("parsing examples")
     data.parse(data=input_dict['examples'], format='n3')
-    print "parsing bk"
+    print("parsing bk")
     for ontology in input_dict['bk_file']:
         data.parse(data=ontology, format='n3')
     settings = input_dict['settings'] if 'settings' in input_dict else ALEPH_SETTINGS
     generalizations = defaultdict(list)
     annotations = defaultdict(list)
-    print "going through generalization predicates"
+    print("going through generalization predicates")
     generelization_predicates = list(data.subjects(predicate=RDF.type, object=HEDWIG.GeneralizationPredicate))
     for predicate in generelization_predicates:
         for sub, obj in data.subject_objects(predicate=predicate):
             if user_defined(sub) and user_defined(obj):
                 generalizations[sub].append(obj)
-    print "going through examples"
+    print("going through examples")
     pos = ''
     neg = ''
     positive_class = Literal(input_dict['positive_class'])
@@ -209,7 +209,7 @@ def convert_to_aleph(input_dict):
             if next(example_annotations, None) is not None:
                 raise Exception("Unable to parse data - annotations for example %s are unclear" % example)
             annotations[example].append(annotation)
-    print "writing bk"
+    print("writing bk")
     bk = ':- modeh(1, positive(+instance)).\n'
     bk += ':- mode(*, annotated_with(+instance, #annotation)).\n'
     bk += ':- determination(positive/1, annotated_with/2).\n'
@@ -222,17 +222,17 @@ def convert_to_aleph(input_dict):
         for super_concept in generalizations[sub_concept]:
             bk += 'annotated_with(X, \'%s\') :- annotated_with(X, \'%s\').\n' % (super_concept, sub_concept)
     bk += '\n'
-    print "writing pos and neg"
+    print("writing pos and neg")
     i = 0
-    print len(annotations)
+    print(len(annotations))
     for example in annotations:
         i += 1
         if i%1000 == 0:
-            print i
+            print(i)
         for concept in annotations[example]:
             bk += 'annotated_with(\'%s\', \'%s\').\n' % (example, concept)
     return_dict['bk'] = bk
     return_dict['pos'] = pos
     return_dict['neg'] = neg
-    print "done!!!"
+    print("done!!!")
     return return_dict

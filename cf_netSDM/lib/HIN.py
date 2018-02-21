@@ -2,7 +2,7 @@ import networkx as nx
 import numpy as np
 import logging
 import scipy.sparse as sp
-from decomposition import get_calculation_method
+from .decomposition import get_calculation_method
 
 
 class Class:
@@ -59,7 +59,8 @@ class HeterogeneousInformationNetwork:
 
         self.midpoint_files = {}
         self.feature_vectors = {}
-        self.process_network(label_delimiter)
+        if label_delimiter:
+            self.process_network(label_delimiter)
 
     def add_label(self, node, label_id, label_name=None):
         if label_name is None:
