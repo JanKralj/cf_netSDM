@@ -1,4 +1,4 @@
-from library import cf_netsdm_reduce, cf_load_gml, cf_hinmine_decompose_post, \
+from .library import cf_netsdm_reduce, cf_load_gml, cf_hinmine_decompose_post, \
     cf_hinmine_propositionalize, cf_hinmine_label_propagation
 
 

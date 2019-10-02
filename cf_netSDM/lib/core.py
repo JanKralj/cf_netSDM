@@ -104,14 +104,11 @@ def shrink_by_pr(network, node_list, pr, percentage, enriched_symbols, interdepe
                 new_node_list.append((node, pr[node_index]))
         new_node_list.sort(key=lambda x: x[1], reverse=True)
         # threshold = new_node_list[int(percentage * len(new_node_list))]
-        i = 1
-        print len(new_node_list)
         belows = defaultdict(set)
         for x in network:
             for node in network.edge[x]:
                 belows[node].add(x)
         for node, score in new_node_list[int(percentage * len(new_node_list)):]:
-            i += 1
             if node not in enriched_symbols:
                 if naive_removal:
                     network.remove_node(node)
@@ -205,10 +202,7 @@ def remove_hyper(network, node):
         object_to = []
         for edge in relations[relation]:
             if network.edge[edge][node]['type'] == 'subject':
-                try:
-                    subject_to.append([x for x in network.edge[edge] if network.edge[edge][x]['type'] == 'object'].pop())
-                except Exception:
-                    print "ojoj."
+                subject_to.append([x for x in network.edge[edge] if network.edge[edge][x]['type'] == 'object'].pop())
             elif network.edge[edge][node]['type'] == 'object':
                 object_to.append([x for x in network.edge[edge] if network.edge[edge][x]['type'] == 'subject'].pop())
             else:
@@ -283,6 +277,4 @@ if __name__=='__main__':
         g.add_edge(7, 4, type='is_a')
         g.add_edge(6, 7, type='is_a')
         s = [0.9, 0.7, 0.6, 0.2, 0.8, 0.4, 0.5]
-        print s
         shrink_by_pr(g, [1,2,3,4,5,6,7], s, 0.55, set())
-        print 9

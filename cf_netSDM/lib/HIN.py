@@ -2,7 +2,7 @@ import networkx as nx
 import numpy as np
 import logging
 import scipy.sparse as sp
-from decomposition import get_calculation_method
+from .decomposition import get_calculation_method
 
 
 class Class:

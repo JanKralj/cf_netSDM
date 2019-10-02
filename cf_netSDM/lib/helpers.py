@@ -1,4 +1,4 @@
-from settings import EXAMPLE_SCHEMA, HEDWIG, W3C
+from .settings import EXAMPLE_SCHEMA, HEDWIG, W3C
 from rdflib import RDF
 
 
