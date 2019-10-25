@@ -228,12 +228,12 @@ class HeterogeneousInformationNetwork:
     def midpoint_generator(self, node_sequence, edge_sequence):
         if len(node_sequence) % 2 == 0:
             raise Exception('In a split of length %i, a midpoint is not well defined!' % len(node_sequence))
-        middle_type = node_sequence[len(node_sequence) / 2]
-        # forward_sequence = %TODO: INVERSE SEQUENCES!!!!!!!!!
+        middle_type = node_sequence[len(node_sequence) // 2]
+
         for node in self.graph:
             if self.graph.node[node]['type'] == middle_type:
                 points = [node]
-                i = len(node_sequence)/2 + 1
+                i = len(node_sequence) // 2 + 1
                 while i < len(node_sequence):
                     current_type = node_sequence[i]
                     new_points = []

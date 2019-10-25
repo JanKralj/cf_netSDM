@@ -10,7 +10,7 @@ def netsdm_reduce(examples, bk_file, target, directed, minimum_ranking, hyper, a
                              'directed': 'true' if directed else 'false',
                              'minimum_ranking': minimum_ranking,
                              'hyper': 'true' if hyper else 'false',
-                             'interdependent_relations': [('http://kt.ijs.si/jan_rel#part_of', 'http://kt.ijs.si/jan_rel#is_a')]}) #TODO: improve this!!!
+                             'interdependent_relations': [('http://kt.ijs.si/jan_rel#part_of', 'http://kt.ijs.si/jan_rel#is_a')]})
 
 
 def load_gml(file, label_delimiter):

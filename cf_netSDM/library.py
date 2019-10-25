@@ -8,9 +8,12 @@ from .lib.HIN import HeterogeneousInformationNetwork
 from collections import defaultdict
 import numpy as np
 import logging
-#test
+import Orange
+
 
 def cf_netsdm_reduce(input_dict):
+    if 'interdependent_relations' not in input_dict:
+        input_dict['interdependent_relations'] = [('http://kt.ijs.si/jan_rel#part_of', 'http://kt.ijs.si/jan_rel#is_a')]
     if input_dict['hyper'] == 'true':
         to_graph, to_rdf, shrink, add_negatives = n3_to_nx_hyper, nx_to_n3_hyper, shrink_hyper_by_pr, add_negatives_hyper
     else:
@@ -64,36 +67,36 @@ def cf_load_gml(input_dict):
 
 
 def cf_hinmine_decompose(input_dict):
-    return {'test': 'test'}
+    return input_dict
 
 
 def cf_hinmine_decompose_post(postdata, input_dict, output_dict):
     try:
-        cycles = postdata['cycle']
+        cycle = postdata['cycle']
     except KeyError:
         raise Exception('No decomposition cycle selected')
     hin = input_dict['network']
-    for cycle in cycles:
-        cycle = cycle.split('_____')
-        node_sequence = []
-        edge_sequence = []
-        for i in range(len(cycle)):
-            if i % 2 == 0:
-                node_sequence.append(cycle[i])
-            else:
-                edge_sequence.append(cycle[i])
-        degrees = defaultdict(int)
-        for item in hin.midpoint_generator(node_sequence, edge_sequence):
-            for node in item:
-                degrees[node] += 1
-        hin.decompose_from_iterator('decomposition',
-                                    input_dict['heuristic'],
-                                    None,
-                                    hin.midpoint_generator(node_sequence, edge_sequence),
-                                    degrees=degrees)
 
-        # save_sparse(tehin.decomposed['MAM_%s' % weighing], 'D:/imdb_data/MAM.%s_fold_%i.npz' % (weighing, fold))
-        logging.info('%s done' % input_dict['heuristic'])
+    cycle = cycle.split('_____')
+    node_sequence = []
+    edge_sequence = []
+    for i in range(len(cycle)):
+        if i % 2 == 0:
+            node_sequence.append(cycle[i])
+        else:
+            edge_sequence.append(cycle[i])
+    degrees = defaultdict(int)
+    for item in hin.midpoint_generator(node_sequence, edge_sequence):
+        for node in item:
+            degrees[node] += 1
+    hin.decompose_from_iterator('decomposition',
+                                input_dict['heuristic'],
+                                None,
+                                hin.midpoint_generator(node_sequence, edge_sequence),
+                                degrees=degrees)
+
+    # save_sparse(tehin.decomposed['MAM_%s' % weighing], 'D:/imdb_data/MAM.%s_fold_%i.npz' % (weighing, fold))
+    logging.info('%s done' % input_dict['heuristic'])
 
     return {'network': hin}
 
@@ -110,18 +113,31 @@ def cf_hinmine_propositionalize(input_dict):
         if norm > 0:
             pr = pr / np.linalg.norm(pr, 2)
             vectors[index, :] = pr
-    train_features = {
-        'data': vectors[hin.train_indices, :],
-        'target': hin.label_matrix[hin.train_indices, :],
-        'target_names': [str(x) for x in hin.label_list],
-        'DESCR': None
+    train_domain = Orange.data.Domain.from_numpy(vectors[hin.train_indices, :], hin.label_matrix[hin.train_indices, :])
+    for i, label in enumerate(hin.label_list):
+        train_domain.class_vars[i].name = str(hin.label_list[i])
+
+    # test_domain = Orange.data.Domain.from_numpy(vectors[hin.test_indices, :])
+    return {
+        'train_features': Orange.data.Table.from_numpy(
+            train_domain, vectors[hin.train_indices, :], Y=hin.label_matrix[hin.train_indices, :]
+        ),
+        'test_features': Orange.data.Table.from_numpy(
+            train_domain, vectors[hin.test_indices, :], Y=hin.label_matrix[hin.test_indices, :]
+        )
     }
-    test_features = {
-        'data': vectors[hin.test_indices, :],
-        'target_names': [str(x) for x in hin.label_list],
-        'DESCR': None
-    }
-    return {'train_features': train_features, 'test_features': test_features}
+    # train_features = {
+    #     'data': vectors[hin.train_indices, :],
+    #     'target': hin.label_matrix[hin.train_indices, :],
+    #     'target_names': [str(x) for x in hin.label_list],
+    #     'DESCR': None
+    # }
+    # test_features = {
+    #     'data': vectors[hin.test_indices, :],
+    #     'target_names': [str(x) for x in hin.label_list],
+    #     'DESCR': None
+    # }
+    # return {'train_features': train_features, 'test_features': test_features}
 
 
 def cf_hinmine_label_propagation(input_dict, weights=None, alpha=0.85, semibalanced=None):

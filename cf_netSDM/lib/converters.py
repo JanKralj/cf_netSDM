@@ -25,7 +25,7 @@ def n3_to_nx(data, positive_class):
             target_nodes.add(example)
         for annotation_link in data.objects(subject=example, predicate=HEDWIG.annotated_with):
             annotations = data.objects(subject=annotation_link, predicate=HEDWIG.annotation)
-            annotation = annotations.next()
+            annotation = next(annotations)
             if next(annotations, None) is not None:
                 raise Exception("Unable to parse data - annotations for example %s are unclear" % example)
             if annotation not in return_graph:
